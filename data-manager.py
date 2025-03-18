@@ -72,7 +72,7 @@ def get_game_icon(appid):
         icon_path = base_path / filename
         if icon_path.exists():
             try:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(str(icon_path), -1, 64, True)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(str(icon_path), -1, 48, True)  # Уменьшено до 48
                 return pixbuf
             except Exception:
                 pass
@@ -81,7 +81,7 @@ def get_game_icon(appid):
         for file in base_path.iterdir():
             if file.is_file() and file.suffix.lower() in [".jpg", ".png"]:
                 try:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(str(file), -1, 64, True)
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(str(file), -1, 48, True)  # Уменьшено до 48
                     return pixbuf
                 except Exception:
                     pass
@@ -146,7 +146,7 @@ def get_valid_app_folders():
 class ProtonManagerWindow(Gtk.Window):
     def __init__(self):
         super().__init__(title="Steam Deck Data Manager")
-        self.maximize()
+        self.set_default_size(1280, 800)  # Фиксированный размер для Steam Deck
 
         pygame.init()
         pygame.joystick.init()
@@ -168,10 +168,12 @@ class ProtonManagerWindow(Gtk.Window):
             self.show_error("No valid Proton prefixes found in compatdata!")
             return
 
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)  # Уменьшено spacing
         self.add(vbox)
 
         label = Gtk.Label(label=f"Using SD card: {MICROSD_PATH}")
+        label.set_margin_top(5)
+        label.set_margin_bottom(5)
         vbox.pack_start(label, False, False, 0)
 
         self.progress = Gtk.ProgressBar()
@@ -187,14 +189,14 @@ class ProtonManagerWindow(Gtk.Window):
         renderer_toggle.connect("toggled", self.on_toggle_selection)
         column_toggle = Gtk.TreeViewColumn("Select", renderer_toggle, active=0)
         column_toggle.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
-        column_toggle.set_fixed_width(50)
+        column_toggle.set_fixed_width(40)  # Уменьшено с 50
         self.treeview.append_column(column_toggle)
 
         renderer_icon = Gtk.CellRendererPixbuf()
         renderer_icon.set_padding(0, 0)
         column_icon = Gtk.TreeViewColumn("Icon", renderer_icon, pixbuf=6)
         column_icon.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
-        column_icon.set_fixed_width(200)
+        column_icon.set_fixed_width(150)  # Уменьшено с 200
         self.treeview.append_column(column_icon)
 
         columns = ["AppID", "Game Name", "Size\n(MB)", "Shader\nSize (MB)", "Location"]
@@ -202,13 +204,14 @@ class ProtonManagerWindow(Gtk.Window):
             renderer = Gtk.CellRendererText()
             renderer.set_padding(0, 0)
             renderer.set_fixed_height_from_font(1)
+            renderer.set_property("scale", 0.9)  # Уменьшен масштаб текста
             if column_title == "Location":
-                renderer.set_property("wrap-width", 300)
+                renderer.set_property("wrap-width", 250)  # Уменьшено с 300
                 renderer.set_property("wrap-mode", Pango.WrapMode.WORD)
                 column = Gtk.TreeViewColumn(column_title, renderer, markup=i + 1)
                 column.set_cell_data_func(renderer, self.format_location)
             elif column_title == "Game Name":
-                renderer.set_property("wrap-width", 200)
+                renderer.set_property("wrap-width", 150)  # Уменьшено с 200
                 renderer.set_property("wrap-mode", Pango.WrapMode.WORD)
                 column = Gtk.TreeViewColumn(column_title, renderer, text=i + 1)
             else:
@@ -216,23 +219,23 @@ class ProtonManagerWindow(Gtk.Window):
             column.set_sizing(Gtk.TreeViewColumnSizing.FIXED)
             column.set_sort_column_id(i + 1)
             if column_title == "AppID":
-                column.set_fixed_width(100)
+                column.set_fixed_width(80)  # Уменьшено с 100
                 self.store.set_sort_func(1, self.string_sort_func, None)
             elif column_title == "Game Name":
-                column.set_fixed_width(200)
+                column.set_fixed_width(150)  # Уменьшено с 200
                 self.store.set_sort_func(2, self.string_sort_func, None)
             elif column_title == "Size\n(MB)":
-                column.set_fixed_width(67)  # Уменьшено с 100 до 67
+                column.set_fixed_width(50)  # Уменьшено с 67
                 renderer.set_property("xalign", 1.0)
                 column.set_cell_data_func(renderer, lambda col, cell, model, iter, data: cell.set_property("text", f"{model[iter][3]:.2f}"))
                 self.store.set_sort_func(3, self.size_sort_func, None)
             elif column_title == "Shader\nSize (MB)":
-                column.set_fixed_width(67)  # Уменьшено с 100 до 67
+                column.set_fixed_width(50)  # Уменьшено с 67
                 renderer.set_property("xalign", 1.0)
                 column.set_cell_data_func(renderer, lambda col, cell, model, iter, data: cell.set_property("text", f"{model[iter][4]:.2f}"))
                 self.store.set_sort_func(4, self.shader_size_sort_func, None)
             elif column_title == "Location":
-                column.set_fixed_width(400)
+                column.set_fixed_width(300)  # Уменьшено с 400
                 self.store.set_sort_func(5, self.string_sort_func, None)
             self.treeview.append_column(column)
 
@@ -243,7 +246,7 @@ class ProtonManagerWindow(Gtk.Window):
         scrolled_window.add(self.treeview)
         vbox.pack_start(scrolled_window, True, True, 0)
 
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=5)  # Уменьшено spacing
         toggle_prefix_button = Gtk.Button(label="Toggle Selected Prefixes")
         toggle_prefix_button.connect("clicked", self.on_toggle_clicked)
         hbox.pack_start(toggle_prefix_button, True, True, 0)
@@ -251,7 +254,7 @@ class ProtonManagerWindow(Gtk.Window):
         toggle_shader_button = Gtk.Button(label="Toggle Selected Shader Caches")
         toggle_shader_button.connect("clicked", self.on_toggle_shader_clicked)
         hbox.pack_start(toggle_shader_button, True, True, 0)
-        vbox.pack_start(hbox, False, False, 0)
+        vbox.pack_start(hbox, False, False, 5)  # Уменьшено padding
 
         self.treeview.set_cursor(Gtk.TreePath.new_first())
         GLib.timeout_add(50, self.handle_gamepad)
@@ -326,7 +329,7 @@ class ProtonManagerWindow(Gtk.Window):
         return False
 
     def apply_initial_sort(self):
-        self.store.set_sort_column_id(3, Gtk.SortType.ASCENDING)  # Сортировка по Size (MB) по возрастанию
+        self.store.set_sort_column_id(3, Gtk.SortType.ASCENDING)
         return False
 
     def add_to_store(self, data):
@@ -349,7 +352,7 @@ class ProtonManagerWindow(Gtk.Window):
             if path:
                 model = treeview.get_model()
                 treeiter = model.get_iter(path)
-                appid = model[treeiter][1]  # Исправлено iter на treeiter
+                appid = model[treeiter][1]
                 game_name = model[treeiter][2]
 
                 menu = Gtk.Menu()
