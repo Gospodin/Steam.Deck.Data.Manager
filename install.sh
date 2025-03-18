@@ -27,10 +27,16 @@ if [ "$device_name" !='' "steamdeck" ] || [ "$user" != "1000" ]; then
   fi
 fi
 
+function add_to_steam() {
+    encodedUrl="steam://addnonsteamgame/$(python3 -c "import urllib.parse;print(urllib.parse.quote(\"$1\", safe=''))")"
+    touch /tmp/addnonsteamgamefile
+    steam "$encodedUrl"
+}
+
 function install_SDDM () {
   zenity --question --width=400 \
     --text="Read $repo_url/README.md before proceeding. \
-    \nWould you like to add Shader Cache Killer to your Steam Library?"
+    \nWould you like to add Data Manager to your Steam Library?"
   if [ "$?" != 0 ]; then
     #NOTE: This code will never be reached due to "set -e", the system will already exit for us but just incase keep this
     echo "bye then! xxx"
@@ -57,8 +63,8 @@ function install_SDDM () {
   echo "Adding Execute and Removing Write Permissions"
   sudo chmod 555 "$script_install_dir/$script_file"
 
-  add_killer="$(steamos-add-to-steam "$script_install_dir/$script_file")"
-
+  file=$(realpath "$script_install_dir/$script_file")
+  add_to_steam "$file"
 }
 
 install_SDDM
